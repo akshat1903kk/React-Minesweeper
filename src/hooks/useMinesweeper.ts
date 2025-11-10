@@ -1,170 +1,171 @@
-import { useState, useCallback, useEffect } from "react";
-import type { Cell, GameStatus } from "../types";
-import { generateBoard } from "../utils/board";
+// src/hooks/useMinesweeper.ts
+import { useCallback, useMemo, useState } from "react";
+import type { Cell, Board, GameStatus } from "../types";
+
+function makeEmptyBoard(rows: number, cols: number): Board {
+  return Array.from({ length: rows }, (_, r) =>
+    Array.from(
+      { length: cols },
+      (_, c): Cell => ({
+        row: r,
+        col: c,
+        isMine: false,
+        isRevealed: false,
+        isFlagged: false,
+        adjacentMines: 0,
+      }),
+    ),
+  );
+}
+
+function inBounds(rows: number, cols: number, r: number, c: number) {
+  return r >= 0 && r < rows && c >= 0 && c < cols;
+}
+
+const NEIGHBORS = [
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, -1],
+  [0, 1],
+  [1, -1],
+  [1, 0],
+  [1, 1],
+];
+
+function placeMines(board: Board, mines: number) {
+  const rows = board.length;
+  const cols = board[0].length;
+  let placed = 0;
+  while (placed < mines) {
+    const r = Math.floor(Math.random() * rows);
+    const c = Math.floor(Math.random() * cols);
+    if (!board[r][c].isMine) {
+      board[r][c].isMine = true;
+      placed++;
+    }
+  }
+}
+
+function computeAdjacency(board: Board) {
+  const rows = board.length;
+  const cols = board[0].length;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (board[r][c].isMine) continue;
+      let count = 0;
+      for (const [dr, dc] of NEIGHBORS) {
+        const rr = r + dr;
+        const cc = c + dc;
+        if (inBounds(rows, cols, rr, cc) && board[rr][cc].isMine) count++;
+      }
+      board[r][c].adjacentMines = count;
+    }
+  }
+}
+
+function generateBoard(rows: number, cols: number, mines: number): Board {
+  const b = makeEmptyBoard(rows, cols);
+  placeMines(b, mines);
+  computeAdjacency(b);
+  return b;
+}
 
 export function useMinesweeper(rows: number, cols: number, mines: number) {
-  /** State: the grid itself */
-  const [board, setBoard] = useState<Cell[][]>(() =>
-    generateBoard(rows, cols, mines),
+  // re-generate when dimensions or mine count change
+  const initialBoard = useMemo(
+    () => generateBoard(rows, cols, mines),
+    [rows, cols, mines],
   );
 
-  /** State: game status and mine count */
+  const [board, setBoard] = useState<Board>(initialBoard);
+  const [minesLeft, setMinesLeft] = useState<number>(mines);
   const [gameStatus, setGameStatus] = useState<GameStatus>("playing");
-  const [minesLeft, setMinesLeft] = useState(mines);
 
-  /** Debugging log (to verify board is actually generated) */
-  useEffect(() => {
-    console.log("Board initialized:", board);
-  }, [board]);
+  const floodReveal = useCallback((b: Board, r: number, c: number) => {
+    const stack: Array<[number, number]> = [[r, c]];
+    const seen = new Set<string>();
+    const key = (rr: number, cc: number) => `${rr},${cc}`;
 
-  /** Count adjacent mines for a specific cell */
-  const countAdjacentMines = useCallback(
-    (b: Cell[][], r: number, c: number) => {
-      const directions = [
-        [-1, -1],
-        [-1, 0],
-        [-1, 1],
-        [0, -1],
-        [0, 1],
-        [1, -1],
-        [1, 0],
-        [1, 1],
-      ];
-      let count = 0;
-      for (const [dr, dc] of directions) {
-        const nr = r + dr;
-        const nc = c + dc;
-        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && b[nr][nc].isMine) {
-          count++;
-        }
-      }
-      return count;
-    },
-    [rows, cols],
-  );
+    while (stack.length) {
+      const [cr, cc] = stack.pop()!;
+      if (!inBounds(b.length, b[0].length, cr, cc)) continue;
+      const cell = b[cr][cc];
+      if (cell.isRevealed || cell.isFlagged) continue;
 
-  /** Recursive reveal logic */
-  const revealCell = useCallback(
-    (row: number, col: number) => {
-      setBoard((prevBoard) => {
-        // Prevent updates after win/loss
-        if (gameStatus !== "playing") return prevBoard;
+      cell.isRevealed = true;
+      seen.add(key(cr, cc));
 
-        // Deep copy board to avoid state mutation
-        const newBoard = prevBoard.map((r) => r.map((cell) => ({ ...cell })));
-        const cell = newBoard[row][col];
-
-        // Ignore flagged or revealed cells
-        if (cell.isRevealed || cell.isFlagged) return newBoard;
-
-        cell.isRevealed = true;
-
-        // If a mine is revealed — game over
-        if (cell.isMine) {
-          setGameStatus("lost");
-          // Reveal all mines
-          return newBoard.map((r) =>
-            r.map((c) => ({ ...c, isRevealed: true })),
-          );
-        }
-
-        // Count surrounding mines
-        const adjacentMines = countAdjacentMines(newBoard, row, col);
-        cell.adjacentMines = adjacentMines;
-
-        // If empty, recursively reveal neighbors
-        if (adjacentMines === 0) {
-          const directions = [
-            [-1, -1],
-            [-1, 0],
-            [-1, 1],
-            [0, -1],
-            [0, 1],
-            [1, -1],
-            [1, 0],
-            [1, 1],
-          ];
-
-          for (const [dr, dc] of directions) {
-            const nr = row + dr;
-            const nc = col + dc;
-            if (
-              nr >= 0 &&
-              nr < rows &&
-              nc >= 0 &&
-              nc < cols &&
-              !newBoard[nr][nc].isRevealed &&
-              !newBoard[nr][nc].isFlagged
-            ) {
-              // Recursive reveal of neighboring cells
-              newBoard[nr][nc].isRevealed = true;
-              const adj = countAdjacentMines(newBoard, nr, nc);
-              newBoard[nr][nc].adjacentMines = adj;
-              if (adj === 0) {
-                // Minimal recursion — prevents infinite flood
-                for (const [dr2, dc2] of directions) {
-                  const rr = nr + dr2;
-                  const cc = nc + dc2;
-                  if (
-                    rr >= 0 &&
-                    rr < rows &&
-                    cc >= 0 &&
-                    cc < cols &&
-                    !newBoard[rr][cc].isRevealed
-                  ) {
-                    newBoard[rr][cc].isRevealed = true;
-                  }
-                }
-              }
-            }
+      if (!cell.isMine && cell.adjacentMines === 0) {
+        for (const [dr, dc] of NEIGHBORS) {
+          const nr = cr + dr;
+          const nc = cc + dc;
+          if (
+            inBounds(b.length, b[0].length, nr, nc) &&
+            !seen.has(key(nr, nc))
+          ) {
+            stack.push([nr, nc]);
           }
         }
+      }
+    }
+  }, []);
 
-        // Check win condition
-        const hasWon = newBoard.flat().every((c) => c.isMine || c.isRevealed);
+  const revealCell = useCallback(
+    (row: number, col: number) => {
+      setBoard((prev) => {
+        if (gameStatus !== "playing") return prev;
 
-        if (hasWon) setGameStatus("won");
+        // clone board immutably
+        const next = prev.map((r) => r.map((c) => ({ ...c })));
+        const cell = next[row][col];
 
-        return newBoard;
+        if (cell.isRevealed || cell.isFlagged) return next;
+
+        if (cell.isMine) {
+          // reveal all, lose
+          for (const r of next) for (const c of r) c.isRevealed = true;
+          setGameStatus("lost");
+          return next;
+        }
+
+        floodReveal(next, row, col);
+
+        // win check
+        const won = next.flat().every((c) => c.isMine || c.isRevealed);
+        if (won) setGameStatus("won");
+
+        return next;
       });
     },
-    [gameStatus, countAdjacentMines, rows, cols],
+    [gameStatus, floodReveal],
   );
 
-  /** Toggle a flag */
   const toggleFlag = useCallback(
     (row: number, col: number) => {
-      setBoard((prevBoard) => {
-        if (gameStatus !== "playing") return prevBoard;
+      setBoard((prev) => {
+        if (gameStatus !== "playing") return prev;
 
-        const newBoard = prevBoard.map((r) => r.map((c) => ({ ...c })));
-        const cell = newBoard[row][col];
+        const next = prev.map((r) => r.map((c) => ({ ...c })));
+        const cell = next[row][col];
 
-        if (cell.isRevealed) return newBoard;
+        if (cell.isRevealed) return next;
 
-        cell.isFlagged = !cell.isFlagged;
-        setMinesLeft((prev) => prev + (cell.isFlagged ? -1 : 1));
+        const willFlag = !cell.isFlagged;
+        cell.isFlagged = willFlag;
+        setMinesLeft((m) => m + (willFlag ? -1 : 1));
 
-        return newBoard;
+        return next;
       });
     },
     [gameStatus],
   );
 
-  /** Reset game state */
   const resetGame = useCallback(() => {
     setBoard(generateBoard(rows, cols, mines));
-    setGameStatus("playing");
     setMinesLeft(mines);
+    setGameStatus("playing");
   }, [rows, cols, mines]);
 
-  /** Return everything for the game */
-  return {
-    board,
-    minesLeft,
-    gameStatus,
-    revealCell,
-    toggleFlag,
-    resetGame,
-  };
+  return { board, minesLeft, gameStatus, revealCell, toggleFlag, resetGame };
 }

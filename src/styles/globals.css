@@ -2,34 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global Reset */
-* {
+html,
+body,
+#root {
+    height: 100%;
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* App Background */
-body {
-    @apply bg-slate-900 text-gray-100 flex justify-center items-center min-h-screen;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(10px);
-    font-family: "Inter", sans-serif;
-}
-
-/* Header Styling */
-h1 {
-    @apply text-3xl font-bold flex items-center gap-2;
-}
-
-button {
-    @apply bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition;
-}
-
-.glass {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 1rem;
+    background-color: rgb(2, 6, 23); /* slate-950 fallback */
 }
