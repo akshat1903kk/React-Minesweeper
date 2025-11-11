@@ -11,12 +11,12 @@ export const Cell: React.FC<CellProps> = ({ cell, onClick, onRightClick }) => {
   const { isRevealed, isMine, isFlagged, adjacentMines } = cell;
 
   const base =
-    "w-10 h-10 flex justify-center items-center text-sm font-bold border rounded";
+    "w-10 h-10 flex justify-center items-center text-sm font-bold rounded transition-all duration-200 border border-[var(--beige)]/10";
   const unrevealed =
-    "bg-slate-800 hover:bg-slate-700 cursor-pointer border-slate-700";
-  const revealed = "bg-slate-600 border-slate-500";
-  const mine = "bg-red-600 text-white";
-  const flag = "text-yellow-400";
+    "bg-[var(--charcoal)] hover:bg-[var(--beige)]/10 cursor-pointer";
+  const revealed = "bg-[var(--stone)] text-[var(--beige)]";
+  const mine = "bg-[var(--wine)] text-[var(--beige)]";
+  const flag = "text-[var(--accent)]";
 
   const cellClass = [
     base,

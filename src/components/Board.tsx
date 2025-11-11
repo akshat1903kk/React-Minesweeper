@@ -14,7 +14,14 @@ export const Board: React.FC<BoardProps> = ({
   onRightClick,
 }) => {
   return (
-    <div className="grid gap-1 p-2 glass border border-slate-600">
+    <div
+      className="
+        grid gap-1 p-4
+        bg-[var(--charcoal)]/60
+        border border-[var(--beige)]/20
+        rounded-xl shadow-inner backdrop-blur-md
+      "
+    >
       {board.map((row, rowIndex) => (
         <div key={rowIndex} className="flex">
           {row.map((cell, colIndex) => (

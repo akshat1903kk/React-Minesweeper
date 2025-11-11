@@ -1,105 +1,49 @@
-// src/pages/GamePage.tsx
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
-import Board from "../components/Board";
+import { useSearchParams } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 import { useMinesweeper } from "../hooks/useMinesweeper";
+import Board from "../components/Board";
+import { useState, useEffect } from "react";
 
-type Difficulty = "easy" | "medium" | "hard";
-
-const SETTINGS: Record<
-  Difficulty,
-  { rows: number; cols: number; mines: number }
-> = {
-  easy: { rows: 9, cols: 9, mines: 10 },
-  medium: { rows: 16, cols: 16, mines: 40 },
-  hard: { rows: 16, cols: 30, mines: 99 },
+const difficultySettings = {
+  easy: { rows: 8, cols: 8, mines: 10 },
+  medium: { rows: 12, cols: 12, mines: 20 },
+  hard: { rows: 16, cols: 16, mines: 40 },
 };
 
-function normalizeDifficulty(v?: string | null): Difficulty {
-  switch ((v || "").toLowerCase()) {
-    case "easy":
-    case "medium":
-    case "hard":
-      return v!.toLowerCase() as Difficulty;
-    default:
-      return "medium";
-  }
-}
-
 export default function GamePage() {
-  const location = useLocation();
+  const [params] = useSearchParams();
+  const difficulty = (params.get("difficulty") ||
+    "easy") as keyof typeof difficultySettings;
+  const { rows, cols, mines } = difficultySettings[difficulty];
 
-  // Read difficulty from navigation state or ?difficulty= query param; default to "medium"
-  const difficulty: Difficulty = useMemo(() => {
-    // from <Link state={{ difficulty }}>
-    const fromState = (location.state as { difficulty?: string } | null)
-      ?.difficulty;
-    // or from ?difficulty=medium
-    const fromQuery = new URLSearchParams(location.search).get("difficulty");
-    return normalizeDifficulty(fromState ?? fromQuery);
-  }, [location.state, location.search]);
-
-  const { rows, cols, mines } = SETTINGS[difficulty];
-
-  // Hook: drives board using selected difficulty
   const { board, minesLeft, gameStatus, revealCell, toggleFlag, resetGame } =
     useMinesweeper(rows, cols, mines);
 
-  // Simple stopwatch that runs only while playing
   const [time, setTime] = useState(0);
+
   useEffect(() => {
-    if (gameStatus !== "playing") return;
-    const id = setInterval(() => setTime((t) => t + 1), 1000);
-    return () => clearInterval(id);
+    if (gameStatus === "playing") {
+      const timer = setInterval(() => setTime((t) => t + 1), 1000);
+      return () => clearInterval(timer);
+    }
   }, [gameStatus]);
 
-  // Reset the board without hard reload
-  const handleReset = () => {
-    resetGame();
-    setTime(0);
-  };
-
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[var(--beige)] text-[var(--charcoal)] font-sans md:flex-row">
+    <div className="flex flex-col md:flex-row h-screen bg-[var(--charcoal)] text-[var(--beige)]">
       {/* Sidebar */}
-      <aside className="w-full bg-[var(--charcoal)] p-6 text-[var(--beige)] shadow-lg md:w-80">
-        <header className="mb-6 text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            Minesweeper
-          </h1>
-          <p className="opacity-70">Classic logic, minimal look.</p>
-        </header>
+      <Sidebar
+        difficulty={difficulty}
+        flagsLeft={minesLeft}
+        time={time}
+        onReset={resetGame}
+      />
 
-        <section className="mx-auto flex w-full max-w-[260px] flex-col gap-4">
-          <div className="flex justify-between">
-            <span>🎯 Difficulty</span>
-            <span className="capitalize">{difficulty}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>⏱ Time</span>
-            <span>{time}s</span>
-          </div>
-          <div className="flex justify-between">
-            <span>💣 Mines left</span>
-            <span>{minesLeft}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>📊 Status</span>
-            <span className="capitalize font-medium">{gameStatus}</span>
-          </div>
-
-          <button
-            onClick={handleReset}
-            className="mt-4 rounded-lg bg-[var(--beige)] px-5 py-2 font-semibold text-[var(--charcoal)] transition hover:bg-opacity-90"
-          >
-            Reset board
-          </button>
-        </section>
-      </aside>
-
-      {/* Board area */}
-      <main className="flex flex-1 items-center justify-center p-4 md:p-8">
-        <div className="overflow-hidden rounded-lg border-2 border-[var(--charcoal)] shadow-2xl">
+      {/* Game Board */}
+      <main className="flex-1 flex justify-center items-center bg-[var(--stone)] p-4">
+        <div className="rounded-xl p-6 bg-[var(--slate)] shadow-lg">
+          <h2 className="text-2xl font-semibold mb-4 text-center capitalize">
+            {difficulty} Mode
+          </h2>
           <Board
             board={board}
             onCellClick={revealCell}

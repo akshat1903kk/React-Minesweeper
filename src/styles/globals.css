@@ -2,10 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
-    height: 100%;
-    margin: 0;
-    background-color: rgb(2, 6, 23); /* slate-950 fallback */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600&display=swap");
+
+/* Define your custom palette (aligned with your chosen colorhunt scheme) */
+:root {
+    --charcoal: #604652;
+    --stone: #735557;
+    --wine: #97866a;
+    --beige: #d29f80;
+
+    --font-body: "Inter", sans-serif;
+    --font-heading: "Poppins", sans-serif;
+}
+
+/* Global reset + base styling */
+body {
+    @apply min-h-screen flex flex-col items-center justify-center antialiased;
+    font-family: var(--font-body);
+    background: linear-gradient(135deg, var(--charcoal), var(--wine));
+    color: var(--beige);
+    transition:
+        background 0.5s ease,
+        color 0.5s ease;
+}
+
+/* Headings get the accent font */
+h1,
+h2,
+h3 {
+    font-family: var(--font-heading);
+    letter-spacing: 0.05em;
+}
+
+/* Buttons + cards share unified glassy style */
+button,
+.card {
+    @apply bg-opacity-20 backdrop-blur-md border border-[var(--stone)]
+         rounded-xl shadow-md transition-transform hover:scale-105 hover:bg-opacity-30;
 }
