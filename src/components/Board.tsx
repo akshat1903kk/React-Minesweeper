@@ -1,6 +1,6 @@
-import React from "react";
+import React from "react"; // Import React to type the event
 import type { Cell as CellType } from "../types";
-import { Cell } from "./Cell";
+import { Cell } from "./Cell"; // This should now work
 
 interface BoardProps {
   board: CellType[][];
@@ -13,30 +13,36 @@ export const Board: React.FC<BoardProps> = ({
   onCellClick,
   onRightClick,
 }) => {
+  const columns = board[0]?.length || 0;
+
   return (
     <div
       className="
-        grid gap-1 p-4
+        grid p-2 gap-0.5
         bg-[var(--charcoal)]/60
         border border-[var(--beige)]/20
         rounded-xl shadow-inner backdrop-blur-md
       "
+      style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
     >
-      {board.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex">
-          {row.map((cell, colIndex) => (
-            <Cell
-              key={`${rowIndex}-${colIndex}`}
-              cell={cell}
-              onClick={() => onCellClick(rowIndex, colIndex)}
-              onRightClick={(e) => {
-                e.preventDefault();
-                onRightClick(rowIndex, colIndex);
-              }}
-            />
-          ))}
-        </div>
-      ))}
+      {board.flat().map((cell, index) => {
+        const rowIndex = Math.floor(index / columns);
+        const colIndex = index % columns;
+
+        return (
+          <Cell
+            key={`${rowIndex}-${colIndex}`}
+            cell={cell}
+            onClick={() => onCellClick(rowIndex, colIndex)}
+            // The Cell component's prop 'onRightClick' expects a function
+            // that takes an event 'e'. The Cell component will handle e.preventDefault()
+            onRightClick={(e: React.MouseEvent<HTMLDivElement>) => {
+              // Now we call the function from our hook
+              onRightClick(rowIndex, colIndex);
+            }}
+          />
+        );
+      })}
     </div>
   );
 };

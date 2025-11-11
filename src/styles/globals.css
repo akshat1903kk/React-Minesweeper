@@ -2,41 +2,105 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600&display=swap");
+/* Import fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap");
 
-/* Define your custom palette (aligned with your chosen colorhunt scheme) */
 :root {
-    --charcoal: #604652;
-    --stone: #735557;
-    --wine: #97866a;
-    --beige: #d29f80;
-
+    --beige: #ebd9b4;
+    --wine: #7a3e65;
+    --charcoal: #2e1f27;
+    --plum: #4b2e39;
+    --tan: #cdaa7d;
     --font-body: "Inter", sans-serif;
     --font-heading: "Poppins", sans-serif;
 }
 
-/* Global reset + base styling */
+/* Background: radial duotone + soft noise overlay */
 body {
-    @apply min-h-screen flex flex-col items-center justify-center antialiased;
     font-family: var(--font-body);
-    background: linear-gradient(135deg, var(--charcoal), var(--wine));
+    background: radial-gradient(
+        circle at center,
+        var(--plum) 0%,
+        var(--tan) 100%
+    );
     color: var(--beige);
-    transition:
-        background 0.5s ease,
-        color 0.5s ease;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-attachment: fixed;
+    overflow-x: hidden;
 }
 
-/* Headings get the accent font */
+/* Universal glow & selection */
+* {
+    box-sizing: border-box;
+    transition: all 0.25s ease-in-out;
+}
+
+::selection {
+    background: var(--wine);
+    color: var(--beige);
+}
+
+/* Cards and panels */
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    border-radius: 1rem;
+}
+
+/* Button styles */
+.btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--beige);
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 0.6rem;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background: var(--wine);
+    transform: scale(1.05);
+    color: var(--beige);
+    box-shadow: 0 0 12px rgba(122, 62, 101, 0.6);
+}
+
+/* Typography hierarchy */
 h1,
 h2,
 h3 {
     font-family: var(--font-heading);
+    color: var(--beige);
     letter-spacing: 0.05em;
 }
 
-/* Buttons + cards share unified glassy style */
-button,
-.card {
-    @apply bg-opacity-20 backdrop-blur-md border border-[var(--stone)]
-         rounded-xl shadow-md transition-transform hover:scale-105 hover:bg-opacity-30;
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.fade-in {
+    animation: fadeIn 0.8s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

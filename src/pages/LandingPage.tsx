@@ -1,35 +1,44 @@
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-const difficulties = [
-  { label: "Easy", value: "easy" },
-  { label: "Medium", value: "medium" },
-  { label: "Hard", value: "hard" },
-];
-
-export default function LandingPage() {
+const LandingPage = () => {
   const navigate = useNavigate();
 
-  return (
-    <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-[var(--charcoal)] to-[var(--stone)] text-[var(--beige)]">
-      <h1 className="text-5xl font-bold mb-6 tracking-wide text-center">
-        Minesweeper
-      </h1>
-      <p className="text-lg opacity-80 mb-12 text-center">
-        Choose your difficulty and begin your challenge!
-      </p>
+  const handleSelect = (difficulty: string) => {
+    navigate(`/play`, { state: { difficulty } });
+  };
 
-      <div className="flex gap-6 flex-wrap justify-center">
-        {difficulties.map((diff) => (
-          <button
-            key={diff.value}
-            onClick={() => navigate(`/play?difficulty=${diff.value}`)}
-            aria-label={`Start ${diff.label} game`}
-            className="px-8 py-3 bg-[var(--slate)] hover:bg-[var(--stone)] text-[var(--beige)] rounded-md shadow-md hover:shadow-lg transition-all text-lg font-semibold"
-          >
-            {diff.label}
-          </button>
-        ))}
-      </div>
-    </div>
+  return (
+    <main className="flex flex-col items-center justify-center min-h-screen text-[var(--beige)] fade-in">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="glass-card p-12 text-center w-[90%] max-w-lg"
+      >
+        <h1 className="text-5xl font-heading mb-4 text-[var(--beige)] drop-shadow-[0_0_6px_rgba(255,255,255,0.2)]">
+          Minesweeper
+        </h1>
+        <p className="text-[var(--beige)]/90 mb-8 text-lg">
+          Choose your difficulty and start clearing the field.
+        </p>
+
+        <div className="flex justify-center gap-6">
+          {["Easy", "Medium", "Hard"].map((level) => (
+            <motion.button
+              key={level}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+              className="btn shadow-md"
+              onClick={() => handleSelect(level.toLowerCase())}
+            >
+              {level}
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+    </main>
   );
-}
+};
+
+export default LandingPage;
