@@ -1,73 +1,161 @@
-# React + TypeScript + Vite
+🎮 React Minesweeper
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A beautifully designed, fully interactive Minesweeper game built with React, TypeScript, TailwindCSS, and Framer Motion. This project focuses on clean UI, smooth animations, and modern frontend engineering principles.
 
-Currently, two official plugins are available:
+\[!NOTE\]
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Consider adding a high-quality GIF or screenshot of the game in action here for a great first impression.
 
-## React Compiler
+✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+🧠 Classic Minsweeper gameplay with multiple difficulty levels.
 
-## Expanding the ESLint configuration
+🪞 Glassmorphism UI with a soft, modern gradient theme.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+⚙️ Built with React + TypeScript + Vite for a fast, modern development experience.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+🎨 Styled entirely with TailwindCSS for utility-first design.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+🎬 Subtle Framer Motion animations for smooth transitions and modal interactions.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+🧱 Modular architecture (components, hooks, utils, pages).
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+⏱️ Real-time game timer and flag counter.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+💥 Game-over and victory animations.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+💻 Fully responsive layout for all screen sizes.
+
+🛠️ Tech Stack
+
+Technology
+
+Purpose
+
+⚛️ React
+
+UI library for building components
+
+🧱 TypeScript
+
+Type safety and scalability
+
+💨 TailwindCSS
+
+Utility-first styling
+
+🎞️ Framer Motion
+
+Declarative animations and transitions
+
+⚡ Vite
+
+Build tool for lightning-fast HMR
+
+🧩 ESLint + Prettier
+
+Code quality and formatting
+
+🚀 Getting Started
+
+Follow these steps to get the project running on your local machine.
+
+1\. Clone the Repository
+
+git clone \[https://github.com/akshat1903kk/React-Minesweeper.git\](https://github.com/akshat1903kk/React-Minesweeper.git)
+
+cd React-Minesweeper
+
+2\. Install Dependencies
+
+npm install
+
+3\. Run the Development Server
+
+npm run dev
+
+The application will be available at http://localhost:5173.
+
+🧩 Gameplay
+
+Left Click: Reveal a cell.
+
+Right Click: Flag or unflag a cell.
+
+Goal: Reveal all non-mine cells without triggering a mine.
+
+The status indicators (timer and flag counter) update dynamically in real-time.
+
+💡 Core Concepts
+
+Design Philosophy
+
+The game embraces a soft gradient + glassmorphism aesthetic, focusing on minimalism and visual clarity. Typography uses Inter and Poppins for an elegant, modern look. Animations are tuned to be subtle yet expressive, making interactions smooth and engaging.
+
+Development Notes
+
+Modular Architecture: The project is organized into independent functional components (Board, Cell, GameStatusModal) for reusability.
+
+Abstracted Logic: The core game logic is abstracted into the useMinesweeper.ts custom hook, making it easy to test, manage state, and scale.
+
+Pure Tailwind: Styled entirely with TailwindCSS, ensuring no dependency on external CSS frameworks.
+
+Animated Variants: Animations are modularized using Framer Motion variants for clean and readable component code.
+
+🗂️ Project Structure
+
+A look at the src directory structure:
+
+react-minesweeper/
+
+├── public/ # Static assets
+
+└── src/
+
+├── assets/ # Images, icons
+
+├── components/ # Reusable UI components (Board, Cell, Sidebar)
+
+├── hooks/ # Custom React hooks (useMinesweeper.ts)
+
+├── pages/ # Main pages (GamePage, LandingPage)
+
+├── router/ # App routing logic (AppRouter.tsx)
+
+├── styles/ # Global styles and themes (globals.css)
+
+├── utils/ # Helper functions (board.ts)
+
+├── types/ # TypeScript type definitions
+
+├── App.tsx # Root app component
+
+└── main.tsx # Entry point
+
+🏆 Future Enhancements
+
+🧍 Player stats and local leaderboard
+
+🕹️ Custom grid/difficulty creation
+
+🌗 Dark mode toggle
+
+🎧 Ambient sound effects
+
+🧠 AI auto-solver (for fun experimentation)
+
+🧑‍💻 Author
+
+Akshat
+
+🚀 Developer | 🎨 Designer | 💭 Thinker
+
+🔗 GitHub
+
+“A perfect blend of logic, precision, and art — just like coding should be.”
+
+— Akshat
+
+📜 License
+
+This project is licensed under the MIT License. Feel free to use, modify, and build upon it—just give credit where it’s due 💖
