@@ -2,8 +2,6 @@
 
 A beautifully designed, fully interactive Minesweeper game built with React, TypeScript, TailwindCSS, and Framer Motion. This project focuses on clean UI, smooth animations, and modern frontend engineering principles.
 
-> [!NOTE]
-> Consider adding a high-quality GIF or screenshot of the game in action here for a great first impression.
 
 ## ✨ Features
 
