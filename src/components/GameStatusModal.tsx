@@ -1,7 +1,6 @@
 // src/components/GameStatusModal.tsx
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import type { Variants } from "framer-motion";
+import React, { useEffect } from "react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 interface GameStatusModalProps {
   status: "won" | "lost" | "playing";
@@ -9,21 +8,21 @@ interface GameStatusModalProps {
   onReset: () => void;
 }
 
-// ✅ Define Framer Motion variants with proper typing
 const backdropVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.3 } },
+  visible: { opacity: 1, transition: { duration: 0.25 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } },
 };
 
 const modalVariants: Variants = {
-  hidden: { opacity: 0, y: -30, scale: 0.9 },
+  hidden: { opacity: 0, y: -24, scale: 0.96 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
     transition: { type: "spring", stiffness: 260, damping: 22 },
   },
-  exit: { opacity: 0, y: 30, scale: 0.95, transition: { duration: 0.25 } },
+  exit: { opacity: 0, y: 24, scale: 0.98, transition: { duration: 0.2 } },
 };
 
 const GameStatusModal: React.FC<GameStatusModalProps> = ({
@@ -31,35 +30,49 @@ const GameStatusModal: React.FC<GameStatusModalProps> = ({
   time,
   onReset,
 }) => {
-  const isVisible = status === "won" || status === "lost";
+  const open = status === "won" || status === "lost";
   const title = status === "won" ? "You Won! 🎉" : "Game Over 💣";
   const message =
     status === "won"
-      ? `You cleared the board in ${time} seconds!`
+      ? `You cleared the board in ${time}s.`
       : "You hit a mine. Try again!";
+
+  // Close on Escape for basic a11y
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onReset();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onReset]);
 
   return (
     <AnimatePresence>
-      {isVisible && (
+      {open && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
-          exit="hidden"
+          exit="exit"
+          onClick={onReset}
         >
           <motion.div
-            className="bg-[var(--beige)] text-[var(--charcoal)] rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center"
+            className="w-[90%] max-w-md rounded-2xl bg-[var(--beige)] p-8 text-center text-[var(--charcoal)] shadow-2xl"
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
+            onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-3xl font-bold mb-3">{title}</h2>
-            <p className="text-lg mb-6">{message}</p>
+            <h2 className="mb-2 text-3xl font-bold">{title}</h2>
+            <p className="mb-6 text-lg opacity-80">{message}</p>
             <button
               onClick={onReset}
-              className="bg-[var(--charcoal)] text-[var(--beige)] px-6 py-3 rounded-lg hover:bg-[var(--wine)] transition-all"
+              className="rounded-lg bg-[var(--charcoal)] px-6 py-3 text-[var(--beige)] transition-colors hover:bg-[var(--wine)]"
             >
               Reset Game
             </button>

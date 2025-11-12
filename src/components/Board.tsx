@@ -1,6 +1,6 @@
-import React from "react"; // Import React to type the event
+import React from "react";
+import { Cell } from "./Cell";
 import type { Cell as CellType } from "../types";
-import { Cell } from "./Cell"; // This should now work
 
 interface BoardProps {
   board: CellType[][];
@@ -13,36 +13,38 @@ export const Board: React.FC<BoardProps> = ({
   onCellClick,
   onRightClick,
 }) => {
-  const columns = board[0]?.length || 0;
+  if (!board || board.length === 0) return null;
+
+  const columns = board[0].length;
 
   return (
     <div
       className="
-        grid p-2 gap-0.5
-        bg-[var(--charcoal)]/60
-        border border-[var(--beige)]/20
-        rounded-xl shadow-inner backdrop-blur-md
+        grid gap-[2px] p-3
+        bg-[rgba(255,255,255,0.05)]
+        rounded-2xl shadow-[inset_0_0_10px_rgba(0,0,0,0.3)]
+        border border-[rgba(255,255,255,0.1)]
+        backdrop-blur-md transition-all duration-300
       "
-      style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+      style={{
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        width: "100%",
+        height: "100%",
+      }}
     >
-      {board.flat().map((cell, index) => {
-        const rowIndex = Math.floor(index / columns);
-        const colIndex = index % columns;
-
-        return (
+      {board.map((row, rowIndex) =>
+        row.map((cell, colIndex) => (
           <Cell
             key={`${rowIndex}-${colIndex}`}
             cell={cell}
             onClick={() => onCellClick(rowIndex, colIndex)}
-            // The Cell component's prop 'onRightClick' expects a function
-            // that takes an event 'e'. The Cell component will handle e.preventDefault()
-            onRightClick={(e: React.MouseEvent<HTMLDivElement>) => {
-              // Now we call the function from our hook
+            onContextMenu={(e: React.MouseEvent<HTMLDivElement>) => {
+              e.preventDefault();
               onRightClick(rowIndex, colIndex);
             }}
           />
-        );
-      })}
+        )),
+      )}
     </div>
   );
 };

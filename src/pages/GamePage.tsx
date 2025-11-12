@@ -1,101 +1,111 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { motion, type Variants } from "framer-motion";
 import Sidebar from "../components/Sidebar";
 import Board from "../components/Board";
+import GameStatusModal from "../components/GameStatusModal";
 import { useMinesweeper } from "../hooks/useMinesweeper";
-import type { Board as BoardType } from "../types";
+import type { Board as BoardType, GameStatus } from "../types";
 
 const GamePage: React.FC = () => {
-  // difficulty from landing; default to Easy
-  const [difficulty, setDifficulty] = useState<string>("Easy");
+  // Could be routed later; for now default to Easy
+  const [difficulty] = useState<"Easy" | "Medium" | "Hard">("Easy");
   const [time, setTime] = useState<number>(0);
 
-  // sizes/mines per difficulty
-  const rows = difficulty === "Medium" ? 16 : difficulty === "Hard" ? 24 : 10;
-  const cols = difficulty === "Medium" ? 16 : difficulty === "Hard" ? 24 : 10;
-  const mines = difficulty === "Medium" ? 40 : difficulty === "Hard" ? 99 : 10;
+  // Compute dimensions/mines from difficulty
+  const { rows, cols, mines } = useMemo(() => {
+    if (difficulty === "Hard") return { rows: 24, cols: 24, mines: 99 };
+    if (difficulty === "Medium") return { rows: 16, cols: 16, mines: 40 };
+    return { rows: 10, cols: 10, mines: 10 };
+  }, [difficulty]);
 
-  // game logic
   const { board, minesLeft, gameStatus, revealCell, toggleFlag, resetGame } =
     useMinesweeper(rows, cols, mines);
 
-  // sidebar wants flagsLeft; for us it's the same as minesLeft
-  const flagsLeft = minesLeft;
-
-  // timer
+  // Stopwatch: run only when playing
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
-
     if (gameStatus === "playing") {
       timer = setInterval(() => setTime((t) => t + 1), 1000);
-    } else if (timer) {
-      clearInterval(timer);
     }
-
     return () => {
       if (timer) clearInterval(timer);
     };
   }, [gameStatus]);
 
-  // animations
+  // Reset handler should also clear time
+  const handleReset = useCallback(() => {
+    setTime(0);
+    resetGame();
+  }, [resetGame]);
+
+  // Simple entrance animations
   const sidebarVariants: Variants = {
-    hidden: { x: -80, opacity: 0 },
-    visible: {
-      x: 0,
-      opacity: 1,
-      transition: { duration: 0.5 },
-    },
+    hidden: { x: -60, opacity: 0 },
+    visible: { x: 0, opacity: 1, transition: { duration: 0.4 } },
   };
 
   const boardVariants: Variants = {
     hidden: { opacity: 0, scale: 0.96 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.6 },
-    },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } },
   };
 
-  // layout: 20% sidebar / 80% board
   return (
-    <div className="flex min-h-screen w-full overflow-hidden">
-      {/* Sidebar (20%) */}
-      <motion.aside
-        className="w-[20%] min-w-[250px] h-full bg-[rgba(255,255,255,0.04)] border-r border-[rgba(255,255,255,0.1)] p-6 backdrop-blur-lg shadow-[0_0_25px_rgba(0,0,0,0.2)]"
-        variants={sidebarVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <Sidebar
-          difficulty={difficulty}
-          time={time}
-          flagsLeft={flagsLeft}
-          minesLeft={minesLeft}
-          status={gameStatus}
-          onReset={resetGame}
-        />
-      </motion.aside>
-
-      {/* Game board (80%) */}
-      <motion.main
-        className="flex-1 flex flex-col items-center justify-center p-10"
-        variants={boardVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <h2 className="text-4xl font-semibold text-[var(--beige)] tracking-wide mb-8 drop-shadow-md">
-          {difficulty} Mode
-        </h2>
-
-        <div className="flex items-center justify-center w-[min(75vmin,700px)] h-[min(75vmin,700px)] rounded-2xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)]">
-          <Board
-            board={board as BoardType}
-            onCellClick={revealCell}
-            onRightClick={toggleFlag}
+    <>
+      <div className="flex min-h-screen w-full overflow-hidden">
+        {/* Sidebar (fixed 20% column) */}
+        <motion.aside
+          variants={sidebarVariants}
+          initial="hidden"
+          animate="visible"
+          className="sticky top-0 h-screen w-[20vw] min-w-[260px] max-w-[340px]
+                     bg-[rgba(255,255,255,0.04)] backdrop-blur-xl border-r border-[rgba(255,255,255,0.1)]
+                     shadow-[0_0_25px_rgba(0,0,0,0.25)] p-6 flex flex-col"
+        >
+          <Sidebar
+            difficulty={difficulty}
+            time={time}
+            flagsLeft={minesLeft}
+            minesLeft={minesLeft}
+            status={gameStatus}
+            onReset={handleReset}
           />
-        </div>
-      </motion.main>
-    </div>
+        </motion.aside>
+
+        {/* Main game area (80%) */}
+        <motion.main
+          variants={boardVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-1 flex-col items-center justify-start p-8"
+        >
+          <h2 className="mb-8 text-5xl font-semibold text-[var(--beige)] drop-shadow-[0_8px_25px_rgba(0,0,0,0.25)]">
+            {difficulty} Mode
+          </h2>
+
+          <div
+            className="flex items-center justify-center w-[min(80vw,1200px)] aspect-square
+                       rounded-2xl border border-[rgba(255,255,255,0.08)]
+                       bg-[rgba(255,255,255,0.05)] backdrop-blur-xl p-4
+                       shadow-[0_40px_140px_rgba(0,0,0,0.3)]"
+          >
+            {board && (
+              <Board
+                board={board as BoardType}
+                onCellClick={revealCell}
+                onRightClick={toggleFlag}
+              />
+            )}
+          </div>
+        </motion.main>
+      </div>
+
+      {/* Win/Lose modal */}
+      <GameStatusModal
+        status={gameStatus as GameStatus}
+        time={time}
+        onReset={handleReset}
+      />
+    </>
   );
 };
 

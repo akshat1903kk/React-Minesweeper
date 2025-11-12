@@ -1,17 +1,16 @@
-import React from "react"; // Make sure React is imported
+import React from "react";
 import type { Cell as CellType } from "../types";
 
-interface CellProps {
+export interface CellProps {
   cell: CellType;
   onClick: () => void;
-  onRightClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-// 1. Define the component as a const
 const CellComponent: React.FC<CellProps> = ({
   cell,
   onClick,
-  onRightClick,
+  onContextMenu,
 }) => {
   const { isRevealed, isMine, isFlagged, adjacentMines } = cell;
 
@@ -21,7 +20,7 @@ const CellComponent: React.FC<CellProps> = ({
     "bg-[var(--charcoal)] hover:bg-[var(--beige)]/10 cursor-pointer";
   const revealed = "bg-[var(--stone)] text-[var(--beige)]";
   const mine = "bg-[var(--wine)] text-[var(--beige)]";
-  const flag = "text-[var(--beige)]"; // Fixed var(--accent)
+  const flag = "text-[var(--beige)]";
 
   const cellClass = [
     base,
@@ -36,9 +35,9 @@ const CellComponent: React.FC<CellProps> = ({
     <div
       className={cellClass}
       onClick={onClick}
-      onContextMenu={(e) => {
+      onContextMenu={(e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault();
-        onRightClick(e); // Pass the event to the prop
+        if (onContextMenu) onContextMenu(e);
       }}
     >
       {isRevealed
@@ -54,5 +53,4 @@ const CellComponent: React.FC<CellProps> = ({
   );
 };
 
-// 2. Export the memoized version as a NAMED export
 export const Cell = React.memo(CellComponent);
